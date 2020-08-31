@@ -24,6 +24,10 @@ export default new VueRouter({
         {
             path: '/trains',
             component: Trains
+        },
+        {
+            path: '/stations/:id',
+            component: () => import('./views/Station')
         }
     ]
 })

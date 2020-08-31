@@ -3,18 +3,18 @@
     <b-button class="btn btn-dark" @click="getAllStations">Refresh</b-button>
     <b-button class="btn btn-dark" @click="showNewStationModal">Add</b-button>
     <b-table :items="stations" :fields="fields" striped head-variant="light" sticky-header="500px">
-      <template v-slot:cell(actions)="{item}">
+      <template v-slot:cell(actions)="row">
 
         <b-button-group>
-          <b-button class="btn btn-info" type="button">
+          <b-button class="btn btn-info" type="button" @click="goToStationInfo(row.item.name)">
             <b-icon icon="info-square"></b-icon>
           </b-button>
 
-          <b-button class="btn btn-secondary" type="button" @click="showUpdateModal(item)">
+          <b-button class="btn btn-secondary" type="button" @click="showUpdateModal(row.item)">
             <b-icon icon="pencil"></b-icon>
           </b-button>
 
-          <b-button class="btn btn-danger" type="button" @click="deleteStation(item.id)">
+          <b-button class="btn btn-danger" type="button" @click="deleteStation(row.item.name)">
             <b-icon icon="trash"></b-icon>
           </b-button>
         </b-button-group>
@@ -23,7 +23,7 @@
     </b-table>
 
     <b-modal
-        ref="stationUpdateModal"
+        ref="updateStationModal"
         centered
         :title="modalStation.title"
         @hide="resetModalInfo"
@@ -35,21 +35,17 @@
           v-bind:value="modalStation.content.name"
           v-model="modalStation.content.name"
       />
-      <b-form-input
-          hidden
-          v-bind:value="modalStation.content.id"
-      />
     </b-modal>
 
     <b-modal
-      ref="newStationModal"
-      centered
-      title="Add new Station"
-      @hide="resetModalInfo"
-      @ok="addNewStation"
+        ref="newStationModal"
+        centered
+        title="Add new Station"
+        @hide="resetModalInfo"
+        @ok="addNewStation"
     >
       <b-form-input
-      v-model="modalStation.content.name"
+          v-model="modalStation.content.name"
       />
     </b-modal>
   </div>
@@ -58,16 +54,13 @@
 <script>
 
 
+import router from "@/router";
+
 export default {
   name: "Stations",
   data() {
     return {
       fields: [
-        {
-          key: "id",
-          sortable: true,
-          label: "Id"
-        },
         {
           key: "name",
           sortable: true,
@@ -79,15 +72,15 @@ export default {
         }
       ],
       stations: [
-        {id: 1, name: "A"},
-        {id: 2, name: "B"},
-        {id: 3, name: "C"},
-        {id: 4, name: "D"}
+        {name: "A"},
+        {name: "B"},
+        {name: "C"},
+        {name: "D"}
       ],
       modalStation: {
         title: 'Edit station',
         content: {
-          id: '',
+          prevName: '',
           name: ''
         },
       },
@@ -97,33 +90,33 @@ export default {
     this.getAllStations()
   },
   methods: {
-    showNewStationModal(){
+    showNewStationModal() {
       this.$refs['newStationModal'].show()
     },
-    deleteStation(id) {
-      this.$axios.delete('/stations/' + id)
+    deleteStation(name) {
+      this.$axios.delete('/stations/' + name)
           .then(() => {
             for (let i = 0; i < this.stations.length; i++) {
-              if (this.stations[i].id === id) {
+              if (this.stations[i].name === name) {
                 this.stations.splice(i, 1)
               }
             }
           })
-      .catch(error => console.log(error))
+          .catch(error => console.log(error))
     },
-    replaceStation(id, content) {
+    replaceStation(name, content) {
       for (let i = 0; i < this.stations.length; i++) {
-        if (this.stations[i].id === id) {
+        if (this.stations[i].name === name) {
           this.stations[i].name = content.name
           break
         }
       }
     },
     updateStation() {
-      const id = this.modalStation.content.id;
-      this.$axios.put("/stations/" + id, this.modalStation.content)
+      const prevName = this.modalStation.content.prevName;
+      this.$axios.put("/stations/" + prevName, {name: this.modalStation.content.name}, {headers: {'content-type': 'application/json'}})
           .then(result => {
-            this.replaceStation(id, result.data)
+            this.replaceStation(prevName, result.data)
           })
           .catch(error => {
             console.log(error)
@@ -132,7 +125,8 @@ export default {
 
     showUpdateModal(item) {
       this.modalStation.content = Object.assign({}, item)
-      this.$refs['stationUpdateModal'].show()
+      this.modalStation.content.prevName = item.name;
+      this.$refs['updateStationModal'].show()
     },
     resetModalInfo() {
       this.modalStation.content = {}
@@ -146,14 +140,17 @@ export default {
             console.log(error)
           })
     },
-    addNewStation(){
-      this.$axios.post("/stations",{
-        name : this.modalStation.content.name
+    addNewStation() {
+      this.$axios.post("/stations", {
+        name: this.modalStation.content.name
       })
-      .then(result =>{
-        this.stations.push(result.data)
-      })
-      .catch(error => console.log(error))
+          .then(result => {
+            this.stations.push(result.data)
+          })
+          .catch(error => console.log(error))
+    },
+    goToStationInfo(name) {
+      router.push({path: '/stations/' + name})
     }
   }
 }
