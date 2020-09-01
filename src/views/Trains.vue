@@ -73,7 +73,7 @@
 
       <b-row class="ml-3 mt-1">
         <b-col>
-          <b-input type="number" min="1" placeholder="Distance" v-bind:value="addTrainModal.seatsNumber"
+          <b-input type="number" min="1" placeholder="Seats numbers" v-bind:value="addTrainModal.seatsNumber"
                    @change="seatsNumberChanged"/>
         </b-col>
         <b-col>
