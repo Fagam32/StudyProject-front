@@ -8,11 +8,17 @@
           <b-button class="btn btn-info" type="button" @click="row['toggleDetails']">
             <b-icon icon="info-square"></b-icon>
           </b-button>
+          <b-button class="btn btn-primary" type="button" @click="goToTrainInfo(row.item.trainName)">
+            <b-icon icon="card-text"></b-icon>
+          </b-button>
+          <b-button v-if="$store.getters.roles.includes('ADMIN')" class="btn btn-danger" type="button"
+                    @click="deleteTrain(row.item.trainName)">
+            <b-icon icon="trash"></b-icon>
+          </b-button>
         </b-button-group>
-
       </template>
 
-      <template v-slot:row-details="row">
+      <template v-if="$store.getters.roles.includes('ADMIN')" v-slot:row-details="row">
         <b-table :items="row.item.path" :fields="train_path_fields" small>
           <template v-slot:cell(standing)="row">
             <b-input size="sm" type="number" v-model="row.item.standing"></b-input>
@@ -20,6 +26,15 @@
         </b-table>
         <b-button class="btn btn-info" type="button" @click="updateStandings(row.item.path)">Save</b-button>
         <b-button class="btn btn-secondary ml-3" type="button" @click="row['toggleDetails']">Close</b-button>
+      </template>
+
+      <template v-else v-slot:row-details="row">
+        <b-table :items="row.item.path" :fields="train_path_fields" small>
+          <template v-slot:cell(standing)="row">
+            {{ row.item.standing }}
+          </template>
+        </b-table>
+
       </template>
     </b-table>
 
@@ -98,6 +113,7 @@
 
 <script>
 import moment from "moment";
+import router from "@/router";
 
 export default {
   name: "Trains",
@@ -151,50 +167,7 @@ export default {
           label: "Departure"
         }
       ],
-      trains: [
-        {
-          trainName: "Third",
-          seatsNumber: 20,
-          fromStation: "Aaa",
-          toStation: "Ddd",
-          departure: "2020-09-25T10:00:00",
-          arrival: "2020-09-25T10:45:00",
-          path: [
-            {
-              TrainName: "Third",
-              order: 1,
-              stationName: "Aaa",
-              departure: "2020-09-25T10:00:00",
-              standing: 0,
-              arrival: null
-            },
-            {
-              trainName: "Third",
-              order: 2,
-              stationName: "Bbb",
-              departure: "2020-09-25T10:10:00",
-              standing: 0,
-              arrival: "2020-09-25T10:10:00"
-            },
-            {
-              trainName: "Third",
-              order: 3,
-              stationName: "Ccc",
-              departure: "2020-09-25T10:25:00",
-              standing: 0,
-              arrival: "2020-09-25T10:25:00"
-            },
-            {
-              trainName: "Third",
-              order: 4,
-              stationName: "Ddd",
-              departure: null,
-              standing: 0,
-              arrival: "2020-09-25T10:45:00"
-            }
-          ],
-        }
-      ],
+      trains: [],
       addTrainModal: {
         trainName: '',
         fromStation: '',
@@ -232,7 +205,7 @@ export default {
         this.trains.forEach(train => {
           train.arrival = this.moment(train.arrival)
           train.departure = this.moment(train.departure)
-          for (let i = 0; i < train.path.length; i++){
+          for (let i = 0; i < train.path.length; i++) {
             train.path[i].arrival = this.moment(train.path[i].arrival)
             train.path[i].departure = this.moment(train.path[i].departure)
           }
@@ -304,16 +277,23 @@ export default {
         departure: modal.departure
       }).then(() => this.getTrainList())
     },
-    updateStandings(path){
+    updateStandings(path) {
       let dataToSend = []
-      path.forEach(st =>{
+      path.forEach(st => {
         let data = {};
         data.trainName = st.trainName
         data.stationName = st.stationName
         data.standing = st.standing
         dataToSend.push(data)
       })
-      this.$axios.put('/trains', dataToSend).then(()=>this.getTrainList())
+      this.$axios.put('/trains', dataToSend, {headers: {Authorization: this.$store.getters.token}}).then(() => this.getTrainList())
+    },
+    goToTrainInfo(name) {
+      router.push({path: '/trains/' + name})
+    },
+    deleteTrain(trainName) {
+      this.$axios.delete("http://localhost:8000/trains/" + trainName, {headers: {Authorization: this.$store.getters.token}})
+          .then(() => this.getTrainList())
     }
   }
 }

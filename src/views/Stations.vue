@@ -1,7 +1,8 @@
 <template>
   <div>
     <b-button class="btn btn-dark" @click="getAllStations">Refresh</b-button>
-    <b-button class="btn btn-dark" @click="showNewStationModal">Add</b-button>
+    <b-button v-if="$store.getters.roles.includes('ADMIN')" class="btn btn-dark" @click="showNewStationModal">Add
+    </b-button>
     <b-table :items="stations" :fields="fields" striped head-variant="light" sticky-header="500px">
       <template v-slot:cell(actions)="row">
 
@@ -10,11 +11,13 @@
             <b-icon icon="info-square"></b-icon>
           </b-button>
 
-          <b-button class="btn btn-secondary" type="button" @click="showUpdateModal(row.item)">
+          <b-button v-if="$store.getters.roles.includes('ADMIN')" class="btn btn-secondary" type="button"
+                    @click="showUpdateModal(row.item)">
             <b-icon icon="pencil"></b-icon>
           </b-button>
 
-          <b-button class="btn btn-danger" type="button" @click="deleteStation(row.item.name)">
+          <b-button v-if="$store.getters.roles.includes('ADMIN')" class="btn btn-danger" type="button"
+                    @click="deleteStation(row.item.name)">
             <b-icon icon="trash"></b-icon>
           </b-button>
         </b-button-group>
@@ -94,7 +97,7 @@ export default {
       this.$refs['newStationModal'].show()
     },
     deleteStation(name) {
-      this.$axios.delete('/stations/' + name)
+      this.$axios.delete('/stations/' + name, {headers: {Authorization: this.$store.getters.token}})
           .then(() => {
             for (let i = 0; i < this.stations.length; i++) {
               if (this.stations[i].name === name) {
@@ -114,7 +117,8 @@ export default {
     },
     updateStation() {
       const prevName = this.modalStation.content.prevName;
-      this.$axios.put("/stations/" + prevName, {name: this.modalStation.content.name}, {headers: {'content-type': 'application/json'}})
+      this.$axios.put("/stations/" + prevName, {name: this.modalStation.content.name},
+          {headers: {'content-type': 'application/json', Authorization: this.$store.getters.token}})
           .then(result => {
             this.replaceStation(prevName, result.data)
           })
@@ -141,9 +145,11 @@ export default {
           })
     },
     addNewStation() {
-      this.$axios.post("/stations", {
-        name: this.modalStation.content.name
-      })
+      this.$axios.post("/stations",
+          {
+            name: this.modalStation.content.name
+          },
+          {headers: {Authorization: this.$store.getters.token}})
           .then(result => {
             this.stations.push(result.data)
           })

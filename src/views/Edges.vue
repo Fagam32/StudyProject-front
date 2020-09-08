@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="$store.getters.roles.includes('ADMIN')">
     <b-button class="btn btn-primary" @click="showAddEdgeModal">Add Edge</b-button>
     <b-button class="btn btn-dark" @click="getAllEdges">Refresh</b-button>
     <b-table :items="edges" :fields="fields" striped head-variant="light" sticky-header="500px">
@@ -132,9 +132,7 @@ export default {
           label: "Actions"
         }
       ],
-      edges: [
-        {fromStation: 'Test', toStation: 'Test', distance: 5}
-      ],
+      edges: [],
       addEdgeModal: {
         fromStation: '',
         fromSelected: false,
@@ -166,7 +164,7 @@ export default {
   },
   methods: {
     getAllEdges() {
-      this.$axios.get('/edges')
+      this.$axios.get('/edges', {headers: {Authorization: this.$store.getters.token}})
           .then(result => {
             this.edges = result.data;
           })
@@ -189,7 +187,7 @@ export default {
       if (text === '' || text === undefined || text.length < 2)
         return;
 
-      this.$axios.get('/stations/?name=' + text)
+      this.$axios.get('/stations/?name=' + text, {headers: {Authorization: this.$store.getters.token}})
           .then(result => {
             result.data.forEach(station => {
               this.suggestionsForFrom[0].data.push(station.name)
@@ -202,7 +200,7 @@ export default {
       if (text === '' || text === undefined || text.length < 2)
         return;
 
-      this.$axios.get('/stations/?name=' + text)
+      this.$axios.get('/stations/?name=' + text, {headers: {Authorization: this.$store.getters.token}})
           .then(result => {
             result.data.forEach(station => {
               this.suggestionsForTo[0].data.push(station.name)
@@ -227,7 +225,13 @@ export default {
               toStation: this.addEdgeModal.toStation,
               distance: this.addEdgeModal.distance
             },
-            {headers: {'content-type': 'application/json'}})
+            {
+              headers:
+                  {
+                    'content-type': 'application/json',
+                    Authorization: this.$store.getters.token
+                  }
+            })
             .then(this.getAllEdges)
       }
     },
@@ -247,7 +251,9 @@ export default {
             fromStation: modalData.fromStation,
             toStation: modalData.toStation,
             distance: modalData.distance
-          })
+          },
+          {headers: {Authorization: this.$store.getters.token}}
+      )
           .then(result => {
             let edges = this.edges;
             let data = result.data;
@@ -260,7 +266,7 @@ export default {
           })
     },
     deleteStation(fromStation, toStation) {
-      this.$axios.delete('/edges/' + fromStation + '/' + toStation)
+      this.$axios.delete('/edges/' + fromStation + '/' + toStation, {headers: {Authorization: this.$store.getters.token}})
           .then(() => {
             let edges = this.edges;
             for (let i = 0; i < edges.length; i++) {

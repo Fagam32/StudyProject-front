@@ -26,8 +26,37 @@ export default new VueRouter({
             component: Trains
         },
         {
-            path: '/stations/:id',
+            path: '/stations/:stationName',
             component: () => import('./views/Station')
+        },
+        {
+            path: '/singup',
+            component: () => import('./views/Singup')
+        },
+        {
+            path: '/singin',
+            component: () => import('./views/Singin')
+        },
+        {
+            path: '/logout',
+            component: () => import('./views/Logout')
+        },
+        {
+            path: '/search',
+            component: () => import('./views/Search')
+        },
+        {
+            path: '/mytickets',
+            component: () => import('./views/Tickets')
+        },
+        {
+            path: '/settings',
+            component: () => import('./views/Settings')
+        },
+        {
+            path: '/trains/:trainName',
+            component: () => import('./views/Train')
         }
+
     ]
 })
