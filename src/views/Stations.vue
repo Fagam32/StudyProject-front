@@ -75,10 +75,6 @@ export default {
         }
       ],
       stations: [
-        {name: "A"},
-        {name: "B"},
-        {name: "C"},
-        {name: "D"}
       ],
       modalStation: {
         title: 'Edit station',
