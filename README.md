@@ -1,24 +1,30 @@
-# stationtrains
+# StudyProject-front
 
-## Project setup
-```
-yarn install
-```
+Requirements:
+ + npm
+ + yarn
+ + Docker
+ + Docker-compose
+ + Free localhost:8081
+ 
+How to run:
 
-### Compiles and hot-reloads for development
-```
-yarn serve
-```
+Create folder
 
-### Compiles and minifies for production
-```
-yarn build
-```
+`mkdir /projects`
 
-### Lints and fixes files
-```
-yarn lint
-```
+`cd /projects`
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+Clone repo
+
+`git clone https://github.com/Fagam32/StudyProject-front/`
+
+Build project
+
+`yarn install`
+
+Run in docker
+
+`docker-compose build`
+
+`docker-compose up`
